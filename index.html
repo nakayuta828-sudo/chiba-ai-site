@@ -1,105 +1,127 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="google-site-verification" content="KoPmO0GfFKokqS3A5ptyzzId3tbLoaR7viLCCFska_U" />
-  <title>千葉大学 合格判定AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial;
-      background: #f4f6f9;
-      text-align: center;
-      padding: 20px;
-    }
-    input {
-      margin: 5px;
-      padding: 8px;
-      width: 120px;
-    }
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      background: #2d89ef;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #result {
-      margin-top: 20px;
-      white-space: pre-wrap;
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>千葉大学 合格判定AI</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #4facfe, #00f2fe);
+  text-align: center;
+  padding: 20px;
+  color: white;
+}
+.container {
+  background: rgba(0,0,0,0.3);
+  padding: 20px;
+  border-radius: 10px;
+  display: inline-block;
+}
+input, select {
+  margin: 5px;
+  padding: 8px;
+  width: 140px;
+  border-radius: 5px;
+  border: none;
+}
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ff9800;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+#result {
+  margin-top: 20px;
+  white-space: pre-wrap;
+  background: white;
+  color: black;
+  padding: 15px;
+  border-radius: 8px;
+}
+</style>
 </head>
+
 <body>
 
-<h1>🎓 Chiba AI Admission Simulator</h1>
+<h1>🎓 千葉大学 合格判定AI</h1>
 
-<h3>共通テスト（200満点）</h3>
-<input id="japanese" placeholder="国語">
-<input id="math" placeholder="数学">
-<input id="science" placeholder="理科">
-<input id="english" placeholder="英語">
-<input id="social" placeholder="社会">
-<input id="info" placeholder="情報">
+<div class="container">
+
+<h3>共通テスト（200/100満点入力）</h3>
+<input id="japanese" placeholder="国語 (200)">
+<input id="math" placeholder="数学 (200)">
+<input id="science" placeholder="理科 (200)">
+<input id="english" placeholder="英語 (200)">
+<input id="social" placeholder="社会 (100)">
+<input id="info" placeholder="情報 (100)">
 
 <h3>二次試験（300満点）</h3>
-<input id="math2" placeholder="数学">
-<input id="science2" placeholder="理科">
-<input id="english2" placeholder="英語">
+<input id="math2" placeholder="数学 (300)">
+<input id="science2" placeholder="理科 (300)">
+<input id="english2" placeholder="英語 (300)">
+
+<h3>学科選択</h3>
+<select id="faculty">
+  <option value="工学部｜建築学">工学部｜建築学</option>
+  <option value="工学部｜都市工学">工学部｜都市工学</option>
+  <option value="工学部｜デザイン">工学部｜デザイン</option>
+  <option value="工学部｜機械工学" selected>工学部｜機械工学</option>
+  <option value="工学部｜医工学">工学部｜医工学</option>
+  <option value="工学部｜電気電子工学">工学部｜電気電子工学</option>
+  <option value="工学部｜物質科学">工学部｜物質科学</option>
+  <option value="工学部｜共生応用化学">工学部｜共生応用化学</option>
+  <option value="情報・データサイエンス学部">情報・データサイエンス学部</option>
+</select>
 
 <br>
 <button onclick="predict()">AI分析する</button>
 
 <div id="result"></div>
 
+</div>
+
 <script type="module">
 import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
 async function predict() {
-  const app = await client("Yutanakada828/Nananakada");
+  document.getElementById("result").innerText = "AI分析中...";
 
-  const result = await app.predict("/predict", {
-    data: [
-      Number(japanese.value),
-      Number(math.value),
-      Number(science.value),
-      Number(english.value),
-      Number(social.value),
-      Number(info.value),
-      Number(math2.value),
-      Number(science2.value),
-      Number(english2.value),
-      "工学部｜機械工学"
-    ]
-  });
+  try {
+    // あなたのSpace
+    const app = await client("Yutanakada828/Nananakada");
 
-  document.getElementById("result").innerText = result.data;
+    // Python側は fn=judge なのでエンドポイントは /judge
+    const response = await app.predict("/judge", {
+      data: [
+        Number(japanese.value || 0),
+        Number(math.value || 0),
+        Number(science.value || 0),
+        Number(english.value || 0),
+        Number(social.value || 0),
+        Number(info.value || 0),
+        Number(math2.value || 0),
+        Number(science2.value || 0),
+        Number(english2.value || 0),
+        faculty.value
+      ]
+    });
+
+    // judgeは (result_text, DataFrame) を返す → 0番目がテキスト
+    document.getElementById("result").innerText = response.data[0];
+
+  } catch (error) {
+    document.getElementById("result").innerText =
+      "エラー発生:\n" + error;
+  }
 }
 
 window.predict = predict;
-</script>
-      data: [
-        Number(japanese.value),
-        Number(math.value),
-        Number(science.value),
-        Number(english.value),
-        Number(social.value),
-        Number(info.value),
-        Number(math2.value),
-        Number(science2.value),
-        Number(english2.value),
-        "工学部｜機械工学"
-      ]
-    })
-  });
-
-  const result = await response.json();
-  document.getElementById("result").innerText = result.data[0];
-}
 </script>
 
 </body>
