@@ -56,13 +56,32 @@
 
 <div id="result"></div>
 
-<script>
-async function predict() {
+<script type="module">
+import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
-  const response = await fetch("https://Yutanakada828-Nananakada.hf.space/api/predict", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+async function predict() {
+  const app = await client("Yutanakada828/Nananakada");
+
+  const result = await app.predict("/predict", {
+    data: [
+      Number(japanese.value),
+      Number(math.value),
+      Number(science.value),
+      Number(english.value),
+      Number(social.value),
+      Number(info.value),
+      Number(math2.value),
+      Number(science2.value),
+      Number(english2.value),
+      "工学部｜機械工学"
+    ]
+  });
+
+  document.getElementById("result").innerText = result.data;
+}
+
+window.predict = predict;
+</script>
       data: [
         Number(japanese.value),
         Number(math.value),
