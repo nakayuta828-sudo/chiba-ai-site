@@ -85,42 +85,42 @@ button {
 
 </div>
 
-<script type="module">
-import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
-
+<script>
 async function predict() {
   document.getElementById("result").innerText = "AI分析中...";
 
   try {
-    // あなたのSpace
-    const app = await client("Yutanakada828/Nananakada");
-
-    // Python側は fn=judge なのでエンドポイントは /judge
-    const response = await app.predict("/judge", {
-      data: [
-        Number(japanese.value || 0),
-        Number(math.value || 0),
-        Number(science.value || 0),
-        Number(english.value || 0),
-        Number(social.value || 0),
-        Number(info.value || 0),
-        Number(math2.value || 0),
-        Number(science2.value || 0),
-        Number(english2.value || 0),
-        faculty.value
-      ]
+    const response = await fetch("/api/predict", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        data: [
+          Number(document.getElementById("japanese").value || 0),
+          Number(document.getElementById("math").value || 0),
+          Number(document.getElementById("science").value || 0),
+          Number(document.getElementById("english").value || 0),
+          Number(document.getElementById("social").value || 0),
+          Number(document.getElementById("info").value || 0),
+          Number(document.getElementById("math2").value || 0),
+          Number(document.getElementById("science2").value || 0),
+          Number(document.getElementById("english2").value || 0),
+          document.getElementById("faculty").value
+        ]
+      })
     });
 
-    // judgeは (result_text, DataFrame) を返す → 0番目がテキスト
-    document.getElementById("result").innerText = response.data[0];
+    const result = await response.json();
+
+    document.getElementById("result").innerText =
+      result.data ? result.data[0] : "エラー";
 
   } catch (error) {
     document.getElementById("result").innerText =
       "エラー発生:\n" + error;
   }
 }
-
-window.predict = predict;
 </script>
 
 </body>
